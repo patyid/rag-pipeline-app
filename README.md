@@ -30,6 +30,16 @@ python main.py
 # Com parâmetros personalizados
 python main.py --db-name="meu_banco" --chunk-size=500 --no-s3
 
+# Ler PDFs do S3 e salvar localmente (EC2/IAM role)
+# `--data-dir` vira o prefixo dentro do bucket de PDFs.
+python main.py --pdf-bucket="meu-bucket-de-pdfs" --data-dir="data/raw/"
+
+# Ler PDFs localmente e salvar o vectorstore no S3
+python main.py --vector-bucket="meu-bucket-de-vetores"
+
+# Ler PDFs do S3 e salvar o vectorstore no S3 (buckets podem ser diferentes)
+python main.py --pdf-bucket="meu-bucket-de-pdfs" --vector-bucket="meu-bucket-de-vetores" --data-dir="data/raw/"
+
 # (Opcional) Rodar uma consulta de teste no fim (custo/latência extra)
 python main.py --test-query
 

@@ -14,6 +14,8 @@ class IngestionPipeline:
         db_name: str = None,
         chunk_size: int = None,
         chunk_overlap: int = None,
+        pdf_bucket: str = None,
+        vector_bucket: str = None,
         save_to_s3: bool = True,
         batch_size: int = 100  # Tamanho do batch para embeddings
     ):
@@ -21,17 +23,19 @@ class IngestionPipeline:
         self.db_name = db_name or settings.vector_db_name
         self.chunk_size = chunk_size or settings.chunk_size
         self.chunk_overlap = chunk_overlap or settings.chunk_overlap
+        self.pdf_bucket = pdf_bucket
+        self.vector_bucket = vector_bucket
         self.save_to_s3 = save_to_s3
         self.batch_size = batch_size
         
         # Inicializa componentes
-        self.loader = PDFLoader(self.data_dir)
+        self.loader = PDFLoader(self.data_dir, s3_bucket=self.pdf_bucket)
         self.chunker = DocumentChunker(self.chunk_size, self.chunk_overlap)
         self.embedder = OpenAIEmbedder(batch_size=self.batch_size)
         self.vector_store = FAISSVectorStore(self.db_name, self.embedder)
         if save_to_s3:
             from src.vectorstore.s3_storage import S3Storage
-            self.s3_storage = S3Storage()
+            self.s3_storage = S3Storage(bucket=self.vector_bucket)
         else:
             self.s3_storage = None
    
