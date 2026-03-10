@@ -80,7 +80,6 @@ models/
 # VECTOR STORES E EMBEDDINGS
 # ============================================
 vector-stores/
-embeddings/
 chroma_db/
 db/
 *.db
