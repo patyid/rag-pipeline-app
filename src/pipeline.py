@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from typing import Optional, List
-from tqdm import tqdm
+
+
 from src.loaders.pdf_loader import PDFLoader
 from src.processors.chunker import DocumentChunker
 from src.embeddings.openai_embedder import OpenAIEmbedder
 from src.vectorstore.faiss_store import FAISSVectorStore
-from src.vectorstore.s3_storage import S3Storage
 from config.settings import settings
 
 class IngestionPipeline:
@@ -28,27 +27,16 @@ class IngestionPipeline:
         # Inicializa componentes
         self.loader = PDFLoader(self.data_dir)
         self.chunker = DocumentChunker(self.chunk_size, self.chunk_overlap)
-        self.embedder = OpenAIEmbedder()
+        self.embedder = OpenAIEmbedder(batch_size=self.batch_size)
         self.vector_store = FAISSVectorStore(self.db_name, self.embedder)
-        self.s3_storage = S3Storage() if save_to_s3 else None
+        if save_to_s3:
+            from src.vectorstore.s3_storage import S3Storage
+            self.s3_storage = S3Storage()
+        else:
+            self.s3_storage = None
    
     
-    
-    def _generate_embeddings(self, chunks: List, texts: List[str]) -> List[List[float]]:
-        """Gera embeddings dos chunks em batches com progresso."""
-        print(f"\n🔍 Gerando embeddings para {len(texts)} chunks...")
-        
-        all_embeddings = []
-        
-        # Processa em batches para ser mais eficiente e mostrar progresso
-        for i in tqdm(range(0, len(texts), self.batch_size), desc="Embedding batches"):
-            batch_texts = texts[i:i + self.batch_size]
-            batch_embeddings = self.embedder.embeddings.embed_documents(batch_texts)
-            all_embeddings.extend(batch_embeddings)
-        
-        print(f"✓ {len(all_embeddings)} embeddings gerados (dimensão: {len(all_embeddings[0])})")
-        return all_embeddings
-    
+
     def run(self):
         """Executa o pipeline completo."""
         print("🚀 Iniciando pipeline de ingestão...\n")
@@ -66,7 +54,7 @@ class IngestionPipeline:
         metadatas = [chunk.metadata for chunk in chunks]
         
         # 4. GERA EMBEDDINGS DOS CHUNKS 
-        embeddings = self._generate_embeddings(chunks, texts)
+        embeddings = self.embedder._generate_embeddings(chunks, texts)
         
         # 5. Adiciona ao vector store com embeddings pré-calculados
         print("\n💾 Adicionando ao vector store...")
@@ -75,15 +63,14 @@ class IngestionPipeline:
             embeddings=embeddings,
             metadatas=metadatas
         )
-        
-        # 6. Salva localmente
-        print("\n💿 Salvando localmente...")
-        local_path = self.vector_store.save(f"data/processed/{self.db_name}")
-        
-        # 7. Upload S3 (opcional)
+
+        # 6. Persistencia (S3-only quando habilitado)
         if self.save_to_s3 and self.s3_storage:
-            print("\n☁️ Enviando para S3...")
-            self.s3_storage.upload_directory(local_path, self.db_name)
+            print("\n☁️ Salvando somente no S3...")
+            self.s3_storage.upload_faiss_vectorstore(self.vector_store.langchain_store, self.db_name)
+        else:
+            print("\n💿 Salvando localmente...")
+            self.vector_store.save(f"data/processed/{self.db_name}")
         
         print(f"\n✅ Pipeline concluído! DB: {self.db_name}")
         print(f"   Total de vetores: {self.vector_store.index.ntotal}")

@@ -47,6 +47,11 @@ class FAISSVectorStore:
         )
         print(f"✓ {len(ids)} vetores adicionados ao índice FAISS")
         return ids
+
+    @property
+    def langchain_store(self) -> FAISS:
+        """Acesso ao objeto FAISS do LangChain (para integracoes como S3)."""
+        return self.vector_store
     
     def save(self, path: Optional[str] = None):
         """Salva localmente."""
