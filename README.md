@@ -18,9 +18,9 @@ pip list
 # 5. Quando terminar, desativar
 deactivate
 
-# 2. Configurar .env
-cp .env.example .env
-# Edite .env com suas chaves
+# 2. Configurar credenciais OpenAI
+# Local: crie um arquivo `.env` na raiz com `OPENAI_API_KEY=...`
+# AWS (sem `.env`): o app busca a chave no SSM Parameter Store em `/rag-pipeline/openai-api-key`
 
 # 3. Colocar PDFs em data/raw/
 
