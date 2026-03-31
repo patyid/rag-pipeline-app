@@ -1,47 +1,106 @@
 # rag-pipeline-app
-Ingestão de PDFs para RAG usando LangChain + OpenAI Embeddings + FAISS, com persistência no S3 (pensado para rodar em uma instância EC2 da AWS).
 
+Ingestao de PDFs para RAG usando LangChain + OpenAI Embeddings + FAISS, com persistencia local.
 
-# 1. Criar ambiente virtual (na pasta do projeto)
-python -m venv venv
+## Setup
 
-# 2. Ativar o ambiente
-# No Linux/Mac:
-source venv/bin/activate
+### 1) Criar e ativar ambiente virtual
 
-# 3. Instalar dependências
+```bash
+python -m venv chatbot
+source chatbot/bin/activate
+```
+
+### 2) Instalar dependencias
+
+```bash
 pip install -r requirements.txt
-
-# 4. Verificar instalação
 pip list
+```
 
-# 5. Quando terminar, desativar
-deactivate
+### 3) Configurar credenciais OpenAI
 
-# 2. Configurar credenciais OpenAI
-# Local: crie um arquivo `.env` na raiz com `OPENAI_API_KEY=...`
-# AWS (sem `.env`): o app busca a chave no SSM Parameter Store em `/rag-pipeline/openai-api-key`
+- Local: crie `.env` na raiz com `OPENAI_API_KEY=...`
 
-# 3. Colocar PDFs em data/raw/
+## Estrutura de entrada
 
-# 4. Executar pipeline completo
+Coloque os PDFs em `data/raw/` (padrao local).
+
+## Execucao
+
+### Pipeline completo (local)
+
+```bash
 python main.py
+```
 
-# Com parâmetros personalizados
-python main.py --db-name="meu_banco" --chunk-size=500 --no-s3
+### Com parametros personalizados
 
-# Ler PDFs do S3 e salvar localmente (EC2/IAM role)
-# `--data-dir` vira o prefixo dentro do bucket de PDFs.
-python main.py --pdf-bucket="meu-bucket-de-pdfs" --data-dir="data/raw/"
+```bash
+python main.py --db-name "meu_banco" --chunk-size 500
+```
 
-# Ler PDFs localmente e salvar o vectorstore no S3
-python main.py --vector-bucket="meu-bucket-de-vetores"
+### Consulta de teste ao final
 
-# Ler PDFs do S3 e salvar o vectorstore no S3 (buckets podem ser diferentes)
-python main.py --pdf-bucket="meu-bucket-de-pdfs" --vector-bucket="meu-bucket-de-vetores" --data-dir="data/raw/"
-
-# (Opcional) Rodar uma consulta de teste no fim (custo/latência extra)
+```bash
 python main.py --test-query
+```
 
-# Ajustar performance/custo da geração de embeddings
-python main.py --batch-size=200
+### Ajuste de batch de embeddings
+
+```bash
+python main.py --batch-size 200
+```
+
+### Interface Streamlit (chat RAG)
+
+Depois de gerar o vector store com `python main.py`, rode:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Chamada do chatbot (local):
+- Abra `http://localhost:8501`
+- Digite sua pergunta no campo `Pergunte sobre os documentos...`
+
+Variáveis úteis:
+- `VECTOR_DB_NAME` (default: `vector_db`)
+- `CHAT_MODEL` para escolher o modelo de chat (default: `gpt-4o-mini`)
+
+## OCR (PDF escaneado/imagem)
+
+### Dependencias de sistema (Debian/Ubuntu/Lux)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y tesseract-ocr tesseract-ocr-por poppler-utils
+```
+
+### Ajuste de velocidade/qualidade
+
+- Menor `--ocr-dpi` => mais rapido
+- Maior `--ocr-workers` => mais paralelismo por pagina
+
+```bash
+python main.py --ocr-dpi 200 --ocr-workers 4
+```
+
+### Melhor qualidade (mais lento)
+
+```bash
+python main.py --ocr-dpi 300 --ocr-workers 2
+```
+
+## Troubleshooting OCR
+
+- `tesseract is not installed`: instale `tesseract-ocr` e confirme no `PATH`
+- `Unable to get page count`: o loader aplica fallback automatico com PyMuPDF
+
+## Encerrar ambiente virtual
+
+```bash
+deactivate
+```
+
+streamlit run streamlit_app.py

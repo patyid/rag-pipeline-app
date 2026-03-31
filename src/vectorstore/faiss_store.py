@@ -39,7 +39,18 @@ class FAISSVectorStore:
     
     def add_embeddings(self, texts: List[str], embeddings: List[List[float]], metadatas: List[dict]):
         """Adiciona textos com embeddings pré-calculados ao índice."""
-        from langchain_core.documents import Document
+        if not texts:
+            raise ValueError("Nenhum texto recebido para indexação no FAISS.")
+        if not embeddings:
+            raise ValueError("Nenhum embedding recebido para indexação no FAISS.")
+        if len(texts) != len(embeddings):
+            raise ValueError(
+                f"Quantidade inconsistente: texts={len(texts)} vs embeddings={len(embeddings)}."
+            )
+        if metadatas is not None and len(metadatas) != len(texts):
+            raise ValueError(
+                f"Quantidade inconsistente: metadatas={len(metadatas)} vs texts={len(texts)}."
+            )
         
         ids = self.vector_store.add_embeddings(
             text_embeddings=list(zip(texts, embeddings)),

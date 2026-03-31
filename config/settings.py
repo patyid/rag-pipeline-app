@@ -102,6 +102,8 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     vector_db_name: str = "vector_db"
     data_dir: str = "data/raw"
+    ocr_dpi: int = 300
+    ocr_workers: int = 1
     
     model_config = SettingsConfigDict(
         env_file=str(DOTENV_PATH),

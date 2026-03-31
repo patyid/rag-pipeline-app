@@ -1,51 +1,52 @@
 # ============================================
 # LANGCHAIN ECOSYSTEM (compatíveis)
 # ============================================
-langchain==0.3.0
-langchain-community==0.3.0
-langchain-openai==0.2.0
-langchain-text-splitters==0.3.0
+langchain==1.2.13
+langchain-community==0.4.1
+langchain-openai==1.1.12
+langchain-text-splitters==1.1.1
 
 # ============================================
 # PDF PROCESSING
 # ============================================
-pymupdf==1.24.10
+pymupdf==1.27.2.2
 pdf2image==1.17.0
 pytesseract==0.3.13
-unstructured==0.15.0
-unstructured-inference==0.7.36
-pdfplumber==0.11.4
+unstructured==0.22.6
+unstructured-inference==1.5.3; python_version < "3.13"
+pdfplumber==0.11.9
 
 # ============================================
 # VECTOR STORE & ML
 # ============================================
-faiss-cpu==1.8.0
-numpy==1.26.4
-scipy==1.14.0
+faiss-cpu==1.13.2
+numpy==2.4.4
+scipy==1.17.1
 
 # ============================================
 # OPENAI & TOKENIZATION
 # ============================================
-openai==1.45.0
-tiktoken==0.7.0
+openai==2.30.0
+tiktoken==0.12.0
 
 # ============================================
 # AWS S3
 # ============================================
-boto3==1.35.0
-botocore==1.35.0
+boto3==1.42.79
+botocore==1.42.79
 
 # ============================================
 # DATA & CONFIG
 # ============================================
-pydantic==2.9.0
-pydantic-settings==2.5.0
-python-dotenv==1.0.1
-pandas==2.2.2
-pyarrow==17.0.0
+pydantic==2.12.5
+pydantic-settings==2.13.1
+python-dotenv==1.2.2
+pandas>=2.2,<3
+pyarrow==23.0.1
 
 # ============================================
 # UTILITIES
 # ============================================
-tqdm==4.66.5
-tenacity==8.5.0
+tqdm==4.67.3
+tenacity==9.1.4
+streamlit==1.49.1
